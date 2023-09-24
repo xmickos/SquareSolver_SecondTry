@@ -147,8 +147,6 @@ void solve_quadratic(double a, double b, double c, double *firstsol, double *sec
         debug_echo();
     #endif
 
-    // 'solve_quadratic' func is needed to work with a != 0 case.
-
     nan_or_inf_check(a);
     nan_or_inf_check(b);
     nan_or_inf_check(c);
