@@ -1,9 +1,7 @@
 #include "quadro_heads.hpp"
 #include <assert.h>
-#define nan_or_inf_check(name);     if(!isfinite(name)){                                        \
-        printf("[%s, line: %d] name is NAN or infinite!\n", __func__, __LINE__);                \
-        return;                                                                                 \
-    }                                                                                           \
+
+/// @brief This file contains all source code for funcs presented in quadro_heads.hhp.
 
 // struct debug_names{
 //     char name[4] = "";
@@ -11,23 +9,12 @@
 //
 // };
 
-void user_input(double *aref, double *bref, double *cref){
-    #ifdef DEBUG
-        debug_echo();
-    #endif
+int user_input(double *aref, double *bref, double *cref){
+    DEBUG_ECHO();
 
-    if(aref == nullptr){
-        printf("[%s, line: %d]: aref is nullptr!\n", __func__, __LINE__);
-        exit(-1);
-    }
-    if(bref == nullptr){
-        printf("[%s, line: %d]: bref is nullptr!", __func__, __LINE__);
-        exit(-1);
-    }
-    if(cref == nullptr){
-        printf("[%s, line: %d]: cref is nullptr!", __func__, __LINE__);
-        exit(-1);
-    }
+    NULLPTR_ERROR_CHECK(aref);
+    NULLPTR_ERROR_CHECK(bref);
+    NULLPTR_ERROR_CHECK(cref);
 
     printf("\nInput your coeffs, one by one separated by a space.\n");
 
@@ -58,12 +45,12 @@ void user_input(double *aref, double *bref, double *cref){
     #ifdef DEBUG
         printf("[DEBUG][%s, line: %d]: input: a = %.3f, b = %.3f, c = %.3f.\n",__func__, __LINE__, *aref, *bref, *cref);
     #endif
+
+    return 0;
 }
 
 bool is_equal(double x, double y, double border){
-    #ifdef DEBUG
-        debug_echo();
-    #endif
+    DEBUG_ECHO();
     // 'is_equal' func is needed to check that |x - y| is lower than eps.
 
     if(!isfinite(x)){
@@ -81,75 +68,58 @@ bool is_equal(double x, double y, double border){
 }
 
 double comp_discr(double a, double b, double c){
+    DEBUG_ECHO();
     #ifdef DEBUG
-        debug_echo();
         printf("[DEBUG][%s, line: %d]: input args are: %f, %f, %f\n", __func__, __LINE__, a, b, c);
         printf("[DEBUG][%s, line: %d]: d is %f\n", __func__, __LINE__, b * b - 4.0 * a * c);
     #endif
     // 'comp_discr' func is needed to compute the equation`s discriminant
 
     // проверки на Input
-    if(!isfinite(a)){
-        printf("[comp_discr, line: %d] a is NAN or infinite number", __LINE__);
-    }
-    if(!isfinite(b)){
-        printf("[comp_discr, line: %d] b is NAN or infinite number", __LINE__);
-    }
-    if(!isfinite(c)){
-        printf("[comp_discr, line: %d] c is NAN or infinite number", __LINE__);
-    }
-
+    NAN_OR_INF_CHECK(a);
+    NAN_OR_INF_CHECK(b);
+    NAN_OR_INF_CHECK(c);
 
     return ((b * b) - 4.0 * a * c);
 }
 
-void solve_linear(double b, double c, double *firstsol, double *secondsol){
-    #ifdef DEBUG
-        debug_echo();
-    #endif
+int solve_linear(double b, double c, double *firstsol, double *secondsol){
+    DEBUG_ECHO();
     //'solve_linear' func is needed to solve a linear equation b*x + c = 0
 
-    #ifdef DEBUG
-        nan_or_inf_check(b);
-        nan_or_inf_check(c);
-    #endif
-    if(firstsol == nullptr){
-        printf("[solve_linear, line: %d] firstsol is nullptr!\n", __LINE__);
-        return;
-    }
-    if(secondsol == nullptr){
-        printf("[solve_linear, line: %d] secondsol is nullptr!\n", __LINE__);
-        return;
-    }
+    NAN_OR_INF_CHECK(b);
+    NAN_OR_INF_CHECK(c);
+
+    NULLPTR_ERROR_CHECK(firstsol);
+    NULLPTR_ERROR_CHECK(secondsol);
 
 
     if(is_equal(b, 0.0, eps)){       // if b = 0.0
         if(is_equal(c, 0.0, eps)){
             printf("Answer: Your equation has infinitely many solutions.\n");   // if a = b = c = 0.0
-            return;
+            return 0;
         }
         else{
             firstsol = nullptr;
             secondsol = nullptr;
             printf("Answer: Your equation has no solutions.\n");
-            return;
+            return 0;
         }
     }
     else{
-    *secondsol = - c / b;
-    printf("Answer: Your equation solutions:\n\tx = %f.\n", *secondsol);
+        *secondsol = - c / b;
+        printf("Answer: Your equation solutions:\n\tx = %f.\n", *secondsol);
+        return 0;
     }
-
+    return 0;
 }
 
-void solve_quadratic(double a, double b, double c, double *firstsol, double *secondsol){
-    #ifdef DEBUG
-        debug_echo();
-    #endif
+int solve_quadratic(double a, double b, double c, double *firstsol, double *secondsol){
+    DEBUG_ECHO();
 
-    nan_or_inf_check(a);
-    nan_or_inf_check(b);
-    nan_or_inf_check(c);
+    NAN_OR_INF_CHECK(a);
+    NAN_OR_INF_CHECK(b);
+    NAN_OR_INF_CHECK(c);
 
     double d = comp_discr(a, b, c);
     #ifdef DEBUG
@@ -160,93 +130,83 @@ void solve_quadratic(double a, double b, double c, double *firstsol, double *sec
         *firstsol = NAN;
         *secondsol = NAN;
         printf("Answer: Your equations has no solutions.\n");
-        return;
+        return 0;
     }
     if(is_equal(d, 0.0, eps)){       // d == 0
         *firstsol = -b / 2.0 * a;
         secondsol = nullptr;
         printf("Answer: Your equation has one solution: x = %f\n", *firstsol);
-        return;
+        return 0;
     }
     if(d > 0.0){              // d > 0
-
-        *firstsol = - (b + sqrt(d)) / (2.0 * a);
-        *secondsol = - (b - sqrt(d)) / (2.0 * a);
+        double square = sqrt(d);
+        *firstsol = - (b + square) / (2.0 * a);
+        *secondsol = - (b - square) / (2.0 * a);
         printf("Answer: Your equation has two different solutions:\n\tx_1 = %f,\n\tx_2 = %f\n", *firstsol, *secondsol);
-        return;
+        return 0;
     }
 
+    return 0;
 }
 
-void solve_general_equation(double a, double b, double c, double *firstsol, double *secondsol){
+int solve_general_equation(double a, double b, double c, double *firstsol, double *secondsol){
 
     // 'solve_general_equation' func redirects the calculation progress due to coefficients values.
 
+    DEBUG_ECHO();
+
     #ifdef DEBUG
-        debug_echo();
-
         printf("[DEBUG][%s, line: %d]: d = %f\n", __func__, __LINE__, b*b-4*a*c);
-
-        nan_or_inf_check(a);
-        nan_or_inf_check(b);
-        nan_or_inf_check(c);
     #endif
-    if(firstsol == nullptr){
-        printf("[solve_general_equation, line: %d] firstsol is nullptr!\n", __LINE__);
-        return;
-    }
-    if(secondsol == nullptr){
-        printf("[solve_general_equation, line: %d] secondsol is nullptr!\n", __LINE__);
-        return;
-    }
+
+    NAN_OR_INF_CHECK(a);
+    NAN_OR_INF_CHECK(b);
+    NAN_OR_INF_CHECK(c);
+
+    NULLPTR_ERROR_CHECK(firstsol);
+    NULLPTR_ERROR_CHECK(secondsol);
 
 
     if(is_equal(a, 0.0, eps)){ // if a = 0.0
-        solve_linear(b, c, firstsol, secondsol);
-        return;
+        if(solve_linear(b, c, firstsol, secondsol)){
+            ERROR_MESSAGE();
+            return -1;
+        }
+        return 0;
     }
     if(is_equal(c, 0.0, eps)){ // a != 0.0 and c = 0.0
         *firstsol = 0.0;
-        solve_linear(a, b, firstsol, secondsol);
+        if(solve_linear(a, b, firstsol, secondsol)){
+            ERROR_MESSAGE();
+            return -1;
+        }
         printf("\tx = %f\n", *firstsol);
-        return;
+        return 0;
     }
     else{                     // if a != 0.0 and c != 0.0
-        solve_quadratic(a, b, c, firstsol, secondsol);
+        if(solve_quadratic(a, b, c, firstsol, secondsol)){
+            ERROR_MESSAGE();
+            return -1;
+        }
     }
+
+    return 0;
 }
 
-void check_test(double *true_firstsol, double *true_secondsol, double *firstsol,
+int check_test(double *true_firstsol, double *true_secondsol, double *firstsol,
                 double *secondsol, int answer_target, FILE *test_answers){
-    debug_echo();
+    DEBUG_ECHO();
 
-    nan_or_inf_check(*true_firstsol);
-    nan_or_inf_check(*true_secondsol);
-    nan_or_inf_check(answer_target);
+    NAN_OR_INF_CHECK(*true_firstsol);
+    NAN_OR_INF_CHECK(*true_secondsol);
+    NAN_OR_INF_CHECK(answer_target);
 
+    TEST_CHECK(is_equal(*firstsol, *true_firstsol, delta) && is_equal(*secondsol, *true_secondsol, delta), 2);
+    TEST_CHECK(firstsol == nullptr && secondsol == nullptr, -1);
+    TEST_CHECK(isnan(*firstsol) && isnan(*secondsol), 0);
+    TEST_CHECK(is_equal(*firstsol, *true_firstsol, delta) && secondsol == nullptr, 1);
 
-    if(answer_target == 2){
-        if(is_equal(*firstsol, *true_firstsol, delta) && is_equal(*secondsol, *true_secondsol, delta))
-            fprintf(test_answers, "[DEBUG][%s, line: %d] Test passed successfully! true_first is %f, true_second is %f\n",
-                    __func__, __LINE__, *true_firstsol, *true_secondsol);
-    }
-    if(answer_target == -1){
-        if(firstsol == nullptr && secondsol == nullptr)
-            fprintf(test_answers, "[DEBUG][%s, line: %d] Test passed successfully! true_first is %f, true_second is %f\n",
-                    __func__, __LINE__, *true_firstsol, *true_secondsol);
-        return;
-    }
-    if(answer_target == 0){
-        if(isnan(*firstsol) && isnan(*secondsol))
-            fprintf(test_answers, "[DEBUG][%s, line: %d] Test passed successfully! true_first is %f, true_second is %f\n",
-                    __func__, __LINE__, *true_firstsol, *true_secondsol);
-    }
-    if(answer_target == 1){
-        if(is_equal(*firstsol, *true_firstsol, delta) && secondsol == nullptr)
-            fprintf(test_answers, "[DEBUG][%s, line: %d] Test passed successfully! true_first is %f, true_second is %f\n",
-                    __func__, __LINE__, *true_firstsol, *true_secondsol);
-    }
-
+    return 0;
 }
 
 void test_reader(FILE *unitest, double *aref, double *bref, double *cref, int *answer_target,

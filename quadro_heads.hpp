@@ -2,11 +2,45 @@
 #include <math.h>
 #include <assert.h>
 
+#ifdef NDEBUG
+#define DEBUG_ECHO(); printf("[DEBUG][%s, %s, line: %d]\n",__FILE__, __func__, __LINE__);
+#else
+#define DEBUG_ECHO(); ;
+#endif
 
-#define debug_echo(); printf("[DEBUG][%s, %s, line: %d]\n",__FILE__, __func__, __LINE__);
+#ifdef DEBUG
+#define NAN_OR_INF_CHECK(name);     if(!isfinite(name)){                                        \
+        printf("[%s, line: %d] #name is NAN or infinite!\n", __func__, __LINE__);               \
+        exit(-1);                                                                               \
+    }                                                                                           \
+#endif
+#endif
 
-/** @brief eps and delta variables are used to compare double numbers with a given precision.
-*/
+#ifndef DEBUG
+#define NAN_OR_INF_CHECK(name); ;
+#endif
+
+#define NULLPTR_ERROR_CHECK(aref);     if(aref == nullptr){                                     \
+        printf("[%s, line: %d]: #aref is nullptr!\n", __func__, __LINE__);                      \
+        return -1;                                                                              \
+    }                                                                                           \
+
+#define ERROR_MESSAGE(); printf("[Error, line: %d] %s shared wrong params!\n", __LINE__, __func__);
+
+#define TEST_PASSED_MESSAGE(); fprintf(test_answers, "[DEBUG][%s, line: %d] Test passed         \
+successfully! true_first is %f, true_second is %f\n",                                           \
+                    __func__, __LINE__, *true_firstsol, *true_secondsol);                       \
+
+#define TEST_CHECK(condition, target);     if(answer_target == target){                         \
+        if(condition) fprintf(test_answers, "[DEBUG][%s, line: %d] Test passed                  \
+                        successfully! true_first is %f, true_second is %f\n", __func__,         \
+                        __LINE__, *true_firstsol, *true_secondsol);                             \
+        return 0;                                                                               \
+    }                                                                                           \
+
+
+/// @brief eps and delta variables are used to compare double numbers with a given precision.
+
 const double eps = 1.0e-3;
 const double delta = 0.01;
 
@@ -18,7 +52,7 @@ const double delta = 0.01;
 * \param cref pointer to variable "a" coefficient. Do not try to use with aref = nullptr.
 */
 
-void user_input(double *aref, double *bref, double *cref);
+int user_input(double *aref, double *bref, double *cref);
 
 /**
 *   @brief Used for compare double numbers with a given precision.
@@ -46,7 +80,7 @@ double comp_discr(double a, double b, double c);
  * @param secondsol pointer to second solution variable. Do not use with secondsol = nullptr.
  */
 
-void solve_linear(double b, double c, double *firstsol, double *secondsol);
+int solve_linear(double b, double c, double *firstsol, double *secondsol);
 
 /**
  * @brief General function that used to split computations in different cases with a, b, c = or != 0.
@@ -58,7 +92,7 @@ void solve_linear(double b, double c, double *firstsol, double *secondsol);
  * @param secondsol pointer to second solution variable. Do not use with secondsol = nullptr.
  */
 
-void solve_general_equation(double a, double b, double c, double *firstsol, double *secondsol);
+int solve_general_equation(double a, double b, double c, double *firstsol, double *secondsol);
 
 /**
  * @brief Debug mode function. Used for checking program`s answers to test examples from tests.txt and write results in logfile.
@@ -72,7 +106,7 @@ void solve_general_equation(double a, double b, double c, double *firstsol, doub
  * @param answers a file pointer used to record test results.
  */
 
-void check_test(double *true_firstsol, double *true_secondsol, double *firstsol,
+int check_test(double *true_firstsol, double *true_secondsol, double *firstsol,
                 double *secondsol, int answer_target, FILE *answers);
 
 /**
@@ -90,3 +124,16 @@ void check_test(double *true_firstsol, double *true_secondsol, double *firstsol,
 
 void test_reader(FILE *unitest, double *aref, double *bref, double *cref, int *answer_target,
             double *true_firstsol, double *true_secondsol);
+
+/**
+ * @brief This func works with case a != 0 and c != 0.
+ *
+ * @param a "a" param of equation. Do not use with a = NULL;
+ * @param b "b" param of equation. Do not use with b = NULL;
+ * @param c "c" param of equation. Do not use with c = NULL;
+ * @param firstsol pointer to first solution variable. Do not use with firstsol = nullptr.
+ * @param secondsol pointer to first solution variable. Do not use with firstsol = nullptr.
+ * @return int
+ */
+
+int solve_quadratic(double a, double b, double c, double *firstsol, double *secondsol);
